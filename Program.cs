@@ -144,6 +144,8 @@ namespace console
                         Thread.Sleep(50);
                     }
                 }
+
+                //Changename
                 else if (command.Contains("changename"))
                 {
                     //Checks if user wrote command without arguments
@@ -182,7 +184,7 @@ namespace console
                                 Thread.Sleep(50);
                                 Console.Write("Do you really want to change your name to {0}(y/n): ", work);
                                 answer = Convert.ToString(Console.ReadLine().ToLower());
-                                if (answer == "y") { username = work.Replace(" ", "-").ToLower();  break; }
+                                if (answer == "y") { username = work.Replace(" ", "-").ToLower(); break; }
                                 else if (answer == "n") { break; }
                             }
                         }
@@ -200,94 +202,223 @@ namespace console
                             sw.WriteLine(username);
                             sw.Close();
                         }
+                        //Enter
                         Console.WriteLine();
                     }
                 }
-                else if (command.Contains("projects --d"))
-                {
-                    string work = command.Replace("projects --d ", "");
-                    WebClient webClient = new WebClient();
-                    
-                    switch (work)
-                    {
-                        case "calculator":
-                            Console.WriteLine("Donwloading...");
-                            try
-                            {
-                                webClient.DownloadFile("https://drive.google.com/uc?id=1Qkj3KnFFGOMPbtSB47NFaDuGgE6Umt3K&export=download", "Calc-setup.zip");
-                                ZipFile.ExtractToDirectory("Calc-setup.zip", Directory.GetCurrentDirectory());
-                                File.Delete("Calc-setup.zip");
-                                Console.WriteLine("Donwloaded sucessfully! Running...\n");
-                                Process process = new Process();
-                                process.StartInfo.FileName = "msiexec";
-                                process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-                                process.StartInfo.Arguments = "/i Calc-Setup.msi";
-                                process.StartInfo.Verb = "runas";
-                                process.Start();
-                                process.WaitForExit(60000);
-                                File.Delete("Calc-Setup.msi");
-                            }
-                            catch
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine("Something happend while we tried to download installator for this program.\n" +
-                                    "Please check your internet connection and try again\n");
-                                Console.ForegroundColor = ConsoleColor.Cyan;
-                            }
-;
-                            break;
-                        case "pc-components-monitor":
-                            Console.WriteLine("Donwloading...");
-                            try
-                            {
-                                webClient.DownloadFile("https://drive.google.com/uc?id=1gygNC51rgtR5kBvWJnObpy6UYtfEe01P&export=download", "PC-Components-Stats-Setup.zip");
-                                ZipFile.ExtractToDirectory("PC-Components-Stats-Setup.zip", Directory.GetCurrentDirectory());
-                                File.Delete("PC-Components-Stats-Setup.zip");
-                                Console.WriteLine("Donwloaded sucessfully! Running...\n");
-                                Process process2 = new Process();
-                                process2.StartInfo.FileName = "msiexec";
-                                process2.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-                                process2.StartInfo.Arguments = "/i PC-Components-Stats-Setup.msi";
-                                process2.StartInfo.Verb = "runas";
-                                process2.Start();
-                                process2.WaitForExit(60000);
-                                File.Delete("PC-Components-Stats-Setup.msi");
-                            }
-                            catch
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine("Something happend while we tried to download installator for this program.\n" +
-                                    "Please check your internet connection and try again\n");
-                                Console.ForegroundColor = ConsoleColor.Cyan;
-                            }
-                            break;
-                        case "tictactoe":
-                            Console.WriteLine("Donwloading...");
-                            try
-                            {
-                                webClient.DownloadFile("https://drive.google.com/uc?id=18z80CD1k88EwReQzky7iAZju8dDdNeGe&export=download", "TicTacToe-Setup.zip");
-                                ZipFile.ExtractToDirectory("TicTacToe-Setup.zip", Directory.GetCurrentDirectory());
-                                File.Delete("TicTacToe-Setup.zip");
-                                Console.WriteLine("Donwloaded sucessfully! Running...\n");
-                                Process process3 = new Process();
-                                process3.StartInfo.FileName = "msiexec";
-                                process3.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-                                process3.StartInfo.Arguments = "/i TicTacToe-Setup.msi";
-                                process3.StartInfo.Verb = "runas";
-                                process3.Start();
-                                process3.WaitForExit(60000);
-                                File.Delete("TicTacToe-Setup.msi");
-                            }
-                            catch
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine("Something happend while we tried to download installator for this program.\n" +
-                                    "Please check your internet connection and try again\n");
-                                Console.ForegroundColor = ConsoleColor.Cyan;
-                            }
-                            break;
 
+                //Download project
+                else if (command.Contains("--d") && command.Contains("projects "))
+                {
+                    WebClient webClient = new WebClient();
+                    //Quiet argument
+                    if (command.Contains("--q"))
+                    {
+                        string work1 = command.Replace("projects ", "").Replace("--d ", "").Replace("--q ", "");
+                        
+                        switch (work1)
+                        {
+                            //Calculator download
+                            case "calculator":
+                                Console.WriteLine("Downloading...");
+                                WebClient client = new WebClient();
+                                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
+                                client.DownloadFile("https://drive.google.com/uc?id=1Qkj3KnFFGOMPbtSB47NFaDuGgE6Umt3K&export=download", "Calc-setup.zip");
+                                    ZipFile.ExtractToDirectory("Calc-setup.zip", Directory.GetCurrentDirectory());
+                                    File.Delete("Calc-setup.zip");
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Downloaded sucessfully! Running...");
+                                    Process process = new Process();
+                                    process.StartInfo.FileName = "msiexec";
+                                    process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+                                    process.StartInfo.Arguments = "/qb /i Calc-Setup.msi";
+                                    process.StartInfo.Verb = "runas";
+                                    process.Start();
+                                    process.WaitForExit(60000);
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Installed sucessfully!\n");
+                                File.Delete("Calc-Setup.msi");
+                                break;
+                            //PC Components Monitor download
+                            case "pc-components-monitor":
+                                Console.WriteLine("Downloading...");
+                                try
+                                {
+                                    webClient.DownloadFile("https://drive.google.com/uc?id=1gygNC51rgtR5kBvWJnObpy6UYtfEe01P&export=download", "PC-Components-Stats-Setup.zip");
+                                    ZipFile.ExtractToDirectory("PC-Components-Stats-Setup.zip", Directory.GetCurrentDirectory());
+                                    File.Delete("PC-Components-Stats-Setup.zip");
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Downloaded sucessfully! Running...");
+                                    Process process2 = new Process();
+                                    process2.StartInfo.FileName = "msiexec";
+                                    process2.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+                                    process2.StartInfo.Arguments = "/qb /i PC-Components-Stats-Setup.msi";
+                                    process2.StartInfo.Verb = "runas";
+                                    process2.Start();
+                                    process2.WaitForExit(60000);
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Installed sucessfully!\n");
+                                    File.Delete("PC-Components-Stats-Setup.msi");
+                                }
+                                catch
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("Something happend while we tried to download installator for this program.\n" +
+                                        "Please check your internet connection and try again\n");
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
+                                }
+                                break;
+                            //Tic-Tac download
+                            case "tictactoe":
+                                Console.WriteLine("Downloading...");
+                                try
+                                {
+                                    webClient.DownloadFile("https://drive.google.com/uc?id=18z80CD1k88EwReQzky7iAZju8dDdNeGe&export=download", "TicTacToe-Setup.zip");
+                                    ZipFile.ExtractToDirectory("TicTacToe-Setup.zip", Directory.GetCurrentDirectory());
+                                    File.Delete("TicTacToe-Setup.zip");
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Downloaded sucessfully! Running...");
+                                    Process process3 = new Process();
+                                    process3.StartInfo.FileName = "msiexec";
+                                    process3.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+                                    process3.StartInfo.Arguments = "/qb /i TicTacToe-Setup.msi";
+                                    process3.StartInfo.Verb = "runas";
+                                    process3.Start();
+                                    process3.WaitForExit(60000);
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Installed sucessfully!\n");
+                                    File.Delete("TicTacToe-Setup.msi");
+                                }
+                                catch
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("Something happend while we tried to download installator for this program.\n" +
+                                        "Please check your internet connection and try again\n");
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
+                                }
+                                break;
+
+                            default:
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("Invalid application name!\nPlease enter valid application name.");
+                                Console.ForegroundColor = ConsoleColor.Cyan;
+                                break;
+
+                        }
                     }
+                    //Without quiet argument
+                    else
+                    {
+                        string work = command.Replace("projects --d ", "");
+
+
+                        //Without quite argument
+                        switch (work)
+                        {
+                            //Calculator download
+                            case "calculator":
+                                Console.WriteLine("Downloading...");
+                                try
+                                {
+                                    webClient.DownloadFile("https://drive.google.com/uc?id=1Qkj3KnFFGOMPbtSB47NFaDuGgE6Umt3K&export=download", "Calc-setup.zip");
+                                    ZipFile.ExtractToDirectory("Calc-setup.zip", Directory.GetCurrentDirectory());
+                                    File.Delete("Calc-setup.zip");
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Downloaded sucessfully! Running...");
+                                    Process process = new Process();
+                                    process.StartInfo.FileName = "msiexec";
+                                    process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+                                    process.StartInfo.Arguments = "/i Calc-Setup.msi";
+                                    process.StartInfo.Verb = "runas";
+                                    process.Start();
+                                    process.WaitForExit(60000);
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Installed sucessfully!\n");
+                                    File.Delete("Calc-Setup.msi");
+                                }
+                                catch
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("Something happend while we tried to download installator for this program.\n" +
+                                        "Please check your internet connection and try again\n");
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
+                                }
+    ;
+                                break;
+                            //PC Components Monitor download
+                            case "pc-components-monitor":
+                                Console.WriteLine("Downloading...");
+                                try
+                                {
+                                    webClient.DownloadFile("https://drive.google.com/uc?id=1gygNC51rgtR5kBvWJnObpy6UYtfEe01P&export=download", "PC-Components-Stats-Setup.zip");
+                                    ZipFile.ExtractToDirectory("PC-Components-Stats-Setup.zip", Directory.GetCurrentDirectory());
+                                    File.Delete("PC-Components-Stats-Setup.zip");
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Downloaded sucessfully! Running...");
+                                    Process process2 = new Process();
+                                    process2.StartInfo.FileName = "msiexec";
+                                    process2.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+                                    process2.StartInfo.Arguments = "/i PC-Components-Stats-Setup.msi";
+                                    process2.StartInfo.Verb = "runas";
+                                    process2.Start();
+                                    process2.WaitForExit(60000);
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Installed sucessfully!\n");
+                                    File.Delete("PC-Components-Stats-Setup.msi");
+                                }
+                                catch
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("Something happend while we tried to download installator for this program.\n" +
+                                        "Please check your internet connection and try again\n");
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
+                                }
+                                break;
+                            //Tic-Tac download
+                            case "tictactoe":
+                                Console.WriteLine("Downloading...");
+                                try
+                                {
+                                    webClient.DownloadFile("https://drive.google.com/uc?id=18z80CD1k88EwReQzky7iAZju8dDdNeGe&export=download", "TicTacToe-Setup.zip");
+                                    ZipFile.ExtractToDirectory("TicTacToe-Setup.zip", Directory.GetCurrentDirectory());
+                                    File.Delete("TicTacToe-Setup.zip");
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Downloaded sucessfully! Running...");
+                                    Process process3 = new Process();
+                                    process3.StartInfo.FileName = "msiexec";
+                                    process3.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+                                    process3.StartInfo.Arguments = "/i TicTacToe-Setup.msi";
+                                    process3.StartInfo.Verb = "runas";
+                                    process3.Start();
+                                    process3.WaitForExit(60000);
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    ClearCurrentConsoleLine();
+                                    Console.WriteLine("Installed sucessfully!\n");
+                                    File.Delete("TicTacToe-Setup.msi");
+                                }
+                                catch
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("Something happend while we tried to download installator for this program.\n" +
+                                        "Please check your internet connection and try again\n");
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
+                                }
+                                break;
+
+                        }
+                    }
+                    
                 }
                 else
                 {
@@ -462,6 +593,20 @@ namespace console
                 Console.Write(descriptions[i] + "\n");
                 Thread.Sleep(50);
             }
+        }
+        public static void ClearCurrentConsoleLine()
+        {
+            int currentLineCursor = Console.CursorTop;
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, currentLineCursor);
+        }
+        private static void DownloadProgress(object sender, DownloadProgressChangedEventArgs e)
+        {
+            double bytesIn = double.Parse(e.BytesReceived.ToString());
+            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
+            double percentage = bytesIn / totalBytes * 100;
+            Console.WriteLine(percentage);
         }
     }
 }
