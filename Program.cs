@@ -583,7 +583,7 @@ namespace console
         {
             string[] projects = {"Calculator", "PC-Components-Monitor", "TicTacToe", "And more is coming..." };
             string[] descriptions = { "A simple calculator made with windows forms", "An app for monitoring components of your computer", "Simple TicTacToe game made with windows forms", "Find all my projects at https://github.com/Jupiter090" };
-            for (int i = 0; i < projects.Length;ved.ToString()); i++)
+            for (int i = 0; i < projects.Length; i++)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write(projects[i]);
@@ -603,7 +603,7 @@ namespace console
         }
         private static void DownloadProgress(object sender, DownloadProgressChangedEventArgs e)
         {
-            double bytesIn = double.Parse(e.BytesRecei
+            double bytesIn = double.Parse(e.BytesReceived.ToString());
             double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
             double percentage = bytesIn / totalBytes * 100;
             Console.WriteLine("HI");
