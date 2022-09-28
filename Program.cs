@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Net;
 using Microsoft.Win32;
 using System.IO.Compression;
+using System.ComponentModel;
 
 namespace console
 {
@@ -22,6 +23,9 @@ namespace console
         private const int MAXIMIZE = 3;
         private const int MINIMIZE = 6;
         private const int RESTORE = 9;
+
+        static bool DownloadCompleted = false;
+        static bool FirstTime = true;
         static void Main(string[] args)
         {
             Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
@@ -223,23 +227,17 @@ namespace console
                                 Console.WriteLine("Downloading...");
                                 WebClient client = new WebClient();
                                 client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
-                                client.DownloadFile("https://drive.google.com/uc?id=1Qkj3KnFFGOMPbtSB47NFaDuGgE6Umt3K&export=download", "Calc-setup.zip");
-                                    ZipFile.ExtractToDirectory("Calc-setup.zip", Directory.GetCurrentDirectory());
-                                    File.Delete("Calc-setup.zip");
-                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-                                    ClearCurrentConsoleLine();
-                                    Console.WriteLine("Downloaded sucessfully! Running...");
-                                    Process process = new Process();
-                                    process.StartInfo.FileName = "msiexec";
-                                    process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-                                    process.StartInfo.Arguments = "/qb /i Calc-Setup.msi";
-                                    process.StartInfo.Verb = "runas";
-                                    process.Start();
-                                    process.WaitForExit(60000);
-                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-                                    ClearCurrentConsoleLine();
-                                    Console.WriteLine("Installed sucessfully!\n");
-                                File.Delete("Calc-Setup.msi");
+                                client.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadDoneCalc);
+                                Uri uri = new Uri("https://drive.google.com/uc?id=1Qkj3KnFFGOMPbtSB47NFaDuGgE6Umt3K&export=download");
+                                client.DownloadFileAsync(uri, "Calc-setup.zip");
+
+                                while (!DownloadCompleted)
+                                {
+
+                                }
+                                DownloadCompleted = false;
+                                FirstTime = true;
+
                                 break;
                             //PC Components Monitor download
                             case "pc-components-monitor":
@@ -603,10 +601,55 @@ namespace console
         }
         private static void DownloadProgress(object sender, DownloadProgressChangedEventArgs e)
         {
+            if (FirstTime)
+            {
+                FirstTime = false;
+            }
+            else
+            {
+                Console.SetCursorPosition(0, Console.CursorTop - 1);
+                ClearCurrentConsoleLine();
+            }
             double bytesIn = double.Parse(e.BytesReceived.ToString());
             double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
             double percentage = bytesIn / totalBytes * 100;
-            Console.WriteLine("HI");
+            Console.Write("[");
+            for (int i = 0; i < 10; i++)
+            {
+                if(i< Math.Round(percentage / 10))
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write("-");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write("-");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                }
+            }
+            Console.WriteLine("]");
+        }
+        private static void DownloadDoneCalc(object sender, AsyncCompletedEventArgs e)
+        {
+            ZipFile.ExtractToDirectory("Calc-setup.zip", Directory.GetCurrentDirectory());
+            File.Delete("Calc-setup.zip");
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            ClearCurrentConsoleLine();
+            Console.WriteLine("Downloaded sucessfully! Running...");
+            Process process = new Process();
+            process.StartInfo.FileName = "msiexec";
+            process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+            process.StartInfo.Arguments = "/qb /i Calc-Setup.msi";
+            process.StartInfo.Verb = "runas";
+            process.Start();
+            process.WaitForExit(60000);
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            ClearCurrentConsoleLine();
+            Console.WriteLine("Installed sucessfully!\n");
+            File.Delete("Calc-Setup.msi");
+            DownloadCompleted = true;
         }
     }
 }
