@@ -244,8 +244,7 @@ namespace console
                                     {
 
                                     }
-                                    client.Dispose();
-                                    client.CancelAsync();
+
                                     DownloadCompleted = false;
                                     FirstTime = true;
                                 }
@@ -273,8 +272,6 @@ namespace console
 
                                     }
 
-                                    client.Dispose();
-                                    client.CancelAsync();
                                     DownloadCompleted = false;
                                     FirstTime = true;
 
@@ -292,23 +289,19 @@ namespace console
                                 Console.WriteLine("Downloading...");
                                 try
                                 {
-                                    webClient.DownloadFile("https://drive.google.com/uc?id=18z80CD1k88EwReQzky7iAZju8dDdNeGe&export=download", "TicTacToe-Setup.zip");
-                                    ZipFile.ExtractToDirectory("TicTacToe-Setup.zip", Directory.GetCurrentDirectory());
-                                    File.Delete("TicTacToe-Setup.zip");
-                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-                                    ClearCurrentConsoleLine();
-                                    Console.WriteLine("Downloaded sucessfully! Running...");
-                                    Process process3 = new Process();
-                                    process3.StartInfo.FileName = "msiexec";
-                                    process3.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-                                    process3.StartInfo.Arguments = "/qb /i TicTacToe-Setup.msi";
-                                    process3.StartInfo.Verb = "runas";
-                                    process3.Start();
-                                    process3.WaitForExit(60000);
-                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-                                    ClearCurrentConsoleLine();
-                                    Console.WriteLine("Installed sucessfully!\n");
-                                    File.Delete("TicTacToe-Setup.msi");
+                                    client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
+                                    client.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadDoneTicTacToeQuiet);
+                                    Uri uri = new Uri("https://drive.google.com/uc?id=18z80CD1k88EwReQzky7iAZju8dDdNeGe&export=download");
+                                    client.DownloadFileAsync(uri, "Calc-setup.zip");
+                                    Console.WriteLine("Downloading...");
+
+                                    while (!DownloadCompleted)
+                                    {
+
+                                    }
+
+                                    DownloadCompleted = false;
+                                    FirstTime = true;
                                 }
                                 catch
                                 {
@@ -656,7 +649,11 @@ namespace console
             {
 
             }
-            ZipFile.ExtractToDirectory("Calc-setup.zip", Directory.GetCurrentDirectory());
+            try
+            {
+                ZipFile.ExtractToDirectory("Calc-setup.zip", Directory.GetCurrentDirectory());
+            }catch
+            { }
             File.Delete("Calc-setup.zip");
             Process process = new Process();
             process.StartInfo.FileName = "msiexec";
@@ -667,7 +664,7 @@ namespace console
             process.WaitForExit(60000);
             File.Delete("Calc-Setup.msi");
             Times = 0;
-            currentTimes = 0;
+            currentTimes = 1;
             DownloadCompleted = true;
             Console.WriteLine("Download completed!");
             Console.WriteLine();
@@ -680,7 +677,13 @@ namespace console
             {
 
             }
-            ZipFile.ExtractToDirectory("Calc-Setup.zip", Directory.GetCurrentDirectory());
+            try {
+                ZipFile.ExtractToDirectory("Calc-Setup.zip", Directory.GetCurrentDirectory());
+            }
+            catch
+            {
+
+            }
             File.Delete("Calc-Setup.zip");
             Process process2 = new Process();
             process2.StartInfo.FileName = "msiexec";
@@ -690,6 +693,37 @@ namespace console
             process2.Start();
             process2.WaitForExit(60000);
             File.Delete("PC-Components-Stats-Setup.msi");
+            Times = 0;
+            currentTimes = 0;
+            DownloadCompleted = true;
+            Console.WriteLine("Download completed!");
+            Console.WriteLine();
+        }
+        private static void DownloadDoneTicTacToeQuiet(object sender, AsyncCompletedEventArgs e)
+        {
+            Times++;
+            int time = Times;
+            while (currentTimes != time)
+            {
+
+            }
+            try
+            {
+                ZipFile.ExtractToDirectory("Calc-Setup.zip", Directory.GetCurrentDirectory());
+            }
+            catch
+            {
+
+            }
+            File.Delete("Calc-Setup.zip");
+            Process process2 = new Process();
+            process2.StartInfo.FileName = "msiexec";
+            process2.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+            process2.StartInfo.Arguments = "/qb /i TicTacToe-Setup.msi";
+            process2.StartInfo.Verb = "runas";
+            process2.Start();
+            process2.WaitForExit(60000);
+            File.Delete("TicTacToe-Setup.msi");
             Times = 0;
             currentTimes = 0;
             DownloadCompleted = true;
