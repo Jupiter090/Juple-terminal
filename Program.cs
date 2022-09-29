@@ -10,6 +10,7 @@ using System.Net;
 using Microsoft.Win32;
 using System.IO.Compression;
 using System.ComponentModel;
+using System.Security;
 
 namespace console
 {
@@ -26,6 +27,11 @@ namespace console
 
         static bool DownloadCompleted = false;
         static bool FirstTime = true;
+
+        static int currentTimes = 1;
+        static int Times = 0;
+
+        static WebClient client = new WebClient();
         static void Main(string[] args)
         {
             Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
@@ -222,45 +228,56 @@ namespace console
                         
                         switch (work1)
                         {
+                            
+
                             //Calculator download
                             case "calculator":
-                                Console.WriteLine("Downloading...");
-                                WebClient client = new WebClient();
-                                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
-                                client.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadDoneCalc);
-                                Uri uri = new Uri("https://drive.google.com/uc?id=1Qkj3KnFFGOMPbtSB47NFaDuGgE6Umt3K&export=download");
-                                client.DownloadFileAsync(uri, "Calc-setup.zip");
-
-                                while (!DownloadCompleted)
+                                try
                                 {
+                                    client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
+                                    client.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadDoneCalcQuiet);
+                                    Uri uri = new Uri("https://drive.google.com/uc?id=1Qkj3KnFFGOMPbtSB47NFaDuGgE6Umt3K&export=download");
+                                    client.DownloadFileAsync(uri, "Calc-setup.zip");
+                                    Console.WriteLine("Downloading...");
 
+                                    while (!DownloadCompleted)
+                                    {
+
+                                    }
+                                    client.Dispose();
+                                    client.CancelAsync();
+                                    DownloadCompleted = false;
+                                    FirstTime = true;
                                 }
-                                DownloadCompleted = false;
-                                FirstTime = true;
-
+                                catch
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("Something happend while we tried to download installator for this program.\n" +
+                                        "Please check your internet connection and try again\n");
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
+                                }
                                 break;
                             //PC Components Monitor download
                             case "pc-components-monitor":
-                                Console.WriteLine("Downloading...");
                                 try
                                 {
-                                    webClient.DownloadFile("https://drive.google.com/uc?id=1gygNC51rgtR5kBvWJnObpy6UYtfEe01P&export=download", "PC-Components-Stats-Setup.zip");
-                                    ZipFile.ExtractToDirectory("PC-Components-Stats-Setup.zip", Directory.GetCurrentDirectory());
-                                    File.Delete("PC-Components-Stats-Setup.zip");
-                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-                                    ClearCurrentConsoleLine();
-                                    Console.WriteLine("Downloaded sucessfully! Running...");
-                                    Process process2 = new Process();
-                                    process2.StartInfo.FileName = "msiexec";
-                                    process2.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-                                    process2.StartInfo.Arguments = "/qb /i PC-Components-Stats-Setup.msi";
-                                    process2.StartInfo.Verb = "runas";
-                                    process2.Start();
-                                    process2.WaitForExit(60000);
-                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-                                    ClearCurrentConsoleLine();
-                                    Console.WriteLine("Installed sucessfully!\n");
-                                    File.Delete("PC-Components-Stats-Setup.msi");
+                                    
+                                    client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
+                                    client.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadDonePCMonitQuiet);
+                                    Uri uri = new Uri("https://drive.google.com/uc?id=1gygNC51rgtR5kBvWJnObpy6UYtfEe01P&export=download");
+                                    client.DownloadFileAsync(uri, "Calc-setup.zip");
+                                    Console.WriteLine("Downloading...");
+
+                                    while (!DownloadCompleted)
+                                    {
+
+                                    }
+
+                                    client.Dispose();
+                                    client.CancelAsync();
+                                    DownloadCompleted = false;
+                                    FirstTime = true;
+
                                 }
                                 catch
                                 {
@@ -601,22 +618,21 @@ namespace console
         }
         private static void DownloadProgress(object sender, DownloadProgressChangedEventArgs e)
         {
-            if (FirstTime)
+            Times++;
+            int time = Times;
+            while (currentTimes != time)
             {
-                FirstTime = false;
+
             }
-            else
-            {
-                Console.SetCursorPosition(0, Console.CursorTop - 1);
-                ClearCurrentConsoleLine();
-            }
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            ClearCurrentConsoleLine();
             double bytesIn = double.Parse(e.BytesReceived.ToString());
             double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
             double percentage = bytesIn / totalBytes * 100;
             Console.Write("[");
             for (int i = 0; i < 10; i++)
             {
-                if(i< Math.Round(percentage / 10))
+                if(i < Math.Round(percentage / 10))
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.Write("-");
@@ -629,15 +645,19 @@ namespace console
                     Console.ForegroundColor = ConsoleColor.Cyan;
                 }
             }
-            Console.WriteLine("]");
+            Console.WriteLine("] " + Math.Round(percentage / 10) * 10 + "%");
+            currentTimes++;
         }
-        private static void DownloadDoneCalc(object sender, AsyncCompletedEventArgs e)
+        private static void DownloadDoneCalcQuiet(object sender, AsyncCompletedEventArgs e)
         {
+            Times++;
+            int time = Times;
+            while (currentTimes != time)
+            {
+
+            }
             ZipFile.ExtractToDirectory("Calc-setup.zip", Directory.GetCurrentDirectory());
             File.Delete("Calc-setup.zip");
-            Console.SetCursorPosition(0, Console.CursorTop - 1);
-            ClearCurrentConsoleLine();
-            Console.WriteLine("Downloaded sucessfully! Running...");
             Process process = new Process();
             process.StartInfo.FileName = "msiexec";
             process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
@@ -645,11 +665,36 @@ namespace console
             process.StartInfo.Verb = "runas";
             process.Start();
             process.WaitForExit(60000);
-            Console.SetCursorPosition(0, Console.CursorTop - 1);
-            ClearCurrentConsoleLine();
-            Console.WriteLine("Installed sucessfully!\n");
             File.Delete("Calc-Setup.msi");
+            Times = 0;
+            currentTimes = 0;
             DownloadCompleted = true;
+            Console.WriteLine("Download completed!");
+            Console.WriteLine();
+        }
+        private static void DownloadDonePCMonitQuiet(object sender, AsyncCompletedEventArgs e)
+        {
+            Times++;
+            int time = Times;
+            while (currentTimes != time)
+            {
+
+            }
+            ZipFile.ExtractToDirectory("Calc-Setup.zip", Directory.GetCurrentDirectory());
+            File.Delete("Calc-Setup.zip");
+            Process process2 = new Process();
+            process2.StartInfo.FileName = "msiexec";
+            process2.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+            process2.StartInfo.Arguments = "/qb /i PC-Components-Stats-Setup.msi";
+            process2.StartInfo.Verb = "runas";
+            process2.Start();
+            process2.WaitForExit(60000);
+            File.Delete("PC-Components-Stats-Setup.msi");
+            Times = 0;
+            currentTimes = 0;
+            DownloadCompleted = true;
+            Console.WriteLine("Download completed!");
+            Console.WriteLine();
         }
     }
 }
