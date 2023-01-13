@@ -425,108 +425,66 @@ namespace console
                                 Console.ForegroundColor = ConsoleColor.Cyan;
                                 break;
                         }
+                        
                     }
-                    
                 }
-                else
+                else if (command.Contains("open"))
                 {
-                    //Switch for commands without arguments
-                    switch (command)
+                    string work = command.Replace("open ", "");
+                    if (!(work.Contains("http://") && work.Contains("www.")))
                     {
-                        //Help command will show list of all commands
-                        case "help":
-                            WriteCommandsList();
-                            Console.WriteLine();
-                            Thread.Sleep(50);
-                            break;
-                        //Clear command will clear all of user writings
-                        case "clear":
-                            Console.Clear();
-                            WriteIntroduction();
-                            break;
-                        //Ver command will show current version
-                        case "ver":
-                            Console.WriteLine("v0.1-beta");
-                            Thread.Sleep(50);
-                            Console.WriteLine();
-                            Thread.Sleep(50);
-                            break;
-                        //Projects command which shows all of my projets
-                        case "projects":
-                            WriteProjectsList();
-                            Console.WriteLine();
-                            Thread.Sleep(50);
-                            break;
-                        case "github":
-                            string url = "https://github.com/Jupiter090/";
-                            try
+                        work = "https://www." + work;
+                    }
+                    else if (!(work.Contains("http://")) && work.Contains("www."))
+                    {
+                        work = "https://" + work;
+                    }
+                    try
+                    {
+                        try
+                        {
+                            Process.Start(work);
+                        }
+                        catch
+                        {
+                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                             {
-                                Process.Start(url);
+                                work = work.Replace("&", "^&");
+                                Process.Start(new ProcessStartInfo(work) { UseShellExecute = true });
                             }
-                            catch
+                            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                             {
-                                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                                {
-                                    url = url.Replace("&", "^&");
-                                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-                                }
-                                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                                {
-                                    Process.Start("xdg-open", url);
-                                }
-                                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                                {
-                                    Process.Start("open", url);
-                                }
-                                else
-                                {
-                                    throw;
-                                }
+                                Process.Start("xdg-open", work);
                             }
-                            break;
-                        case "test":
-
-                            break;
-                        //Terminal.exit command will close the terminal
-                        case "terminal.exit":
-                            Thread.Sleep(50);
-                            Console.Write("Are you sure(y/n): ");
-                            string answer = Convert.ToString(Console.ReadLine().ToLower());
-                            if (answer == "y") Environment.Exit(0);
-                            else if (answer == "n") break;
+                            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                            {
+                                Process.Start("open", work);
+                            }
                             else
                             {
-                                while (true)
-                                {
-                                    Thread.Sleep(50);
-                                    Console.Write("Are you sure(y/n): ");
-                                    answer = Convert.ToString(Console.ReadLine().ToLower());
-                                    if (answer == "y") Environment.Exit(0);
-                                    else if (answer == "n") break;
-                                }
+                                throw;
                             }
-                            break;
-                        //When command is not found will show tip to use help command
-                        default:
-                            Console.WriteLine("Command not found.");
-                            Thread.Sleep(50);
-                            Console.Write("To found all valid commands write '");
-                            Thread.Sleep(50);
-                            Console.ForegroundColor = ConsoleColor.Yellow;
-                            Console.Write("help");
-                            Thread.Sleep(50);
-                            Console.ForegroundColor = ConsoleColor.Cyan;
-                            Console.Write("'!\n");
-                            Console.WriteLine();
-                            Thread.Sleep(50);
-                            break;
+                        }
                     }
+                    catch
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red; 
+                        Console.WriteLine("The URL wasn't in correct format. \n" +
+                            "Correct format: www.website.com!");
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                    }
+                }
+
+
+                else
+                {
+                    Commands.GetCommand(command);
                 }
             }
         }
 
 
-        static void WriteIntroduction()
+        public static void WriteIntroduction()
         {
             //Changes text color to red
             Console.ForegroundColor = ConsoleColor.Green;
@@ -574,15 +532,20 @@ namespace console
         }
         public static void WriteCommandsList()
         {
-            string[] commands = {"help", "ver", "clear", "projects", "echo", "changename", "github", "terminal.exit"};
-            string[] descriptions = { "Will show you this list of all commands", "Shows you version of terminal you are running", "Clear all commands you wrote", "Gives you list of all my projects" ,"Repeats message you write", "Change your name to what you want", "Bring you to my GitHub page", "Exits the Juple terminal"};
+            string[] commands = {"Command", "help", "ver", "clear", "projects", "echo", "changename", "open" , "github", "terminal.exit"};
+            string[] descriptions = {"Description", "Will show you this list of all commands", "Shows you version of terminal you are running", "Clear all commands you wrote", "Gives you list of all my projects" ,"Repeats message you write", "Change your name to what you want", "Opens website you input",  "Bring you to my GitHub page", "Exits the Juple terminal"};
+            string[] args = { "Arguments\n", "", "", "", "--d --q <project>", "<message>", "<name>", "<URL>", "", "", ""};
             for (int i = 0; i < commands.Length; i++)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write(commands[i]);
                 Thread.Sleep(50);
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.SetCursorPosition(Console.WindowWidth / 8, Console.CursorTop);
+                Console.Write(args[i]);
+                Thread.Sleep(50);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.SetCursorPosition(Console.WindowWidth / 4, Console.CursorTop);
                 Console.Write(descriptions[i] + "\n");
                 Thread.Sleep(50);
             }
